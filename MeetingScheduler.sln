@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetingScheduler.Infrastruc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetingScheduler.Api.Test", "MeetingSchedulerUnitTest\MeetingScheduler.Api.Test.csproj", "{EB5BFB9C-2BE2-45B0-B37E-7454B19088A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetingScheduler.Bussines.Test", "MeetingScheduler.Bussines.Test\MeetingScheduler.Bussines.Test.csproj", "{B8E0CDED-59B2-4843-B8A6-A9E6705E9E73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetingScheduler.Bussines.Test", "MeetingScheduler.Bussines.Test\MeetingScheduler.Bussines.Test.csproj", "{B8E0CDED-59B2-4843-B8A6-A9E6705E9E73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

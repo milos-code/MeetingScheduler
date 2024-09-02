@@ -8,6 +8,7 @@ namespace MeetingScheduler.Infrastructure.Repositories.Interfaces
         Task<User> GetUserById(Guid userId);
         Task<User> GetUserByUserName(string userName);
         Task<List<User>> GetEmployeesForPeopleManager(Guid peopleManagerId);
+        Task<List<User>> GetAllFreeEmployees();
         Task<User> GetUserWithPeopleManagerById(Guid userId);
         Task<List<string>> GetRoleNames(User user);
         Task<User> AddUser(User user);

@@ -41,7 +41,7 @@ namespace MeetingScheduler.Bussines.Services.JwtTokenGenerator
 
             return new LogInUserResponse
             {
-                Token = "Bearer    " + tokenHandler.WriteToken(token),
+                Token = "Bearer " + tokenHandler.WriteToken(token),
                 Expiration = expiration
             };
         }

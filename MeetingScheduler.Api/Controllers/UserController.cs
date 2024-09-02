@@ -2,6 +2,7 @@
 using MeetingScheduler.Bussines.Services.Interfaces;
 using MeetingScheduler.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,7 @@ namespace MeetingScheduler.Api.Controllers
         private readonly IUserService _userService = userService;
         private readonly UserManager<User> _userManager = userManager;
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, PeopleManager")]
         [HttpGet("GetAllUsers")]
         public async Task<ActionResult<List<UserDto>>> GetAllUsers()
         {
@@ -29,11 +30,24 @@ namespace MeetingScheduler.Api.Controllers
             return await _userService.GetUserById(userId);
         }
 
+        [HttpGet("GetUserByUserName")]
+        public async Task<ActionResult<UserDto>> GetUserByUserName()
+        {
+            return await _userService.GetUserByUserName();
+        }
+
         [Authorize(Roles = "PeopleManager")]
         [HttpGet("GetUsersForPeopleManager")]
         public async Task<ActionResult<List<UserDto>>> GetEmployeesForPeopleManager()
         {
             return Ok(await _userService.GetEmployeesForPeopleManager());
+        }
+
+        [Authorize(Roles = "PeopleManager")]
+        [HttpGet("GetAllFreeEmployees")]
+        public async Task<ActionResult<List<UserDto>>> GetAllFreeEmployees()
+        {
+            return Ok(await _userService.GetAllFreeEmployees());
         }
 
         [Authorize(Roles = "Admin")]
@@ -47,16 +61,16 @@ namespace MeetingScheduler.Api.Controllers
 
         [Authorize(Roles = "PeopleManager")]
         [HttpPost("AssignEmployeeToPeopleManager")]
-        public async Task AssignEmployeeToPeopleManager(Guid userId)
+        public async Task<ActionResult> AssignEmployeeToPeopleManager([FromBody]AssignUserIdDto assignUserIdDto)
         {
-            await _userService.AssignEmployeeToPeopleManager(userId);
+            return Ok(await _userService.AssignEmployeeToPeopleManager(assignUserIdDto.UserId));
         }
 
         [Authorize(Roles = "PeopleManager")]
         [HttpPost("UnassignEmployeeToPeopleManager")]
-        public async Task UnassignEmployeeFromPeopleManager(Guid userId)
+        public async Task<ActionResult> UnassignEmployeeFromPeopleManager(UnassignEmployeeDto unassignEmployeeDto)
         {
-            await _userService.UnassignEmployeeFromPeopleManage(userId);
+            return Ok(await _userService.UnassignEmployeeFromPeopleManage(unassignEmployeeDto.UserId));
         }
 
         [HttpPut("UpdateUser")]

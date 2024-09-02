@@ -31,6 +31,14 @@ namespace MeetingScheduler.Infrastructure.Repositories
                 ToListAsync();
         }
 
+        public async Task<List<User>> GetAllFreeEmployees()
+        {
+            var employees = await _userManager.GetUsersInRoleAsync("Employee");
+            return employees
+                .Where(u => u.PeopleManagerId == null)
+                .ToList();
+        }
+
         public async Task<User> GetUserWithPeopleManagerById(Guid userId)
         {
             return await _userManager.Users.Include(p => p.PeopleManager).FirstOrDefaultAsync(u => u.Id == userId);

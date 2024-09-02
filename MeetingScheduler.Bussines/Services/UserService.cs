@@ -6,6 +6,7 @@ using MeetingScheduler.Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using StudentRecords.Bussines.Exceptions;
 using System.Net;
 using System.Transactions;
@@ -43,11 +44,23 @@ namespace MeetingScheduler.Bussines.Services
             return await _userHelperService.MapUserDtoWithRoles(user);
         }
 
+        public async Task<UserDto> GetUserByUserName()
+        {
+            return await _userHelperService.MapUserDtoWithRoles(await _userRepository.GetUserByUserName(httpContextAccessor.HttpContext.User.Identity.Name));
+        }
+
         public async Task<List<UserDto>> GetEmployeesForPeopleManager()
         {
             var peopleManager = await _userRepository.GetUserByUserName(httpContextAccessor.HttpContext.User.Identity.Name);
 
             var users = await _userRepository.GetEmployeesForPeopleManager(peopleManager.Id);
+
+            return await _userHelperService.MapUsersDtoListWithRoles(users);
+        }
+
+        public async Task<List<UserDto>> GetAllFreeEmployees()
+        {
+            var users = await _userRepository.GetAllFreeEmployees();
 
             return await _userHelperService.MapUsersDtoListWithRoles(users);
         }
@@ -99,9 +112,14 @@ namespace MeetingScheduler.Bussines.Services
             return await _userHelperService.MapUserDtoWithRoles(user);
         }
 
-        public async Task AssignEmployeeToPeopleManager(Guid userId)
+        public async Task<bool> AssignEmployeeToPeopleManager(string userId)
         {
-            var user = await _userRepository.GetUserWithPeopleManagerById(userId);
+            if (!Guid.TryParse(userId, out var guidId))
+            {
+                throw new ArgumentException("Invalid userId format.");
+            }
+
+            var user = await _userRepository.GetUserWithPeopleManagerById(guidId);
 
             ApiExceptionHandler.ObjectNotFound(user, $"User {user.UserName}");
 
@@ -110,17 +128,26 @@ namespace MeetingScheduler.Bussines.Services
             user.PeopleManagerId = peopleManager.Id;
 
             await _userRepository.UpdateUser(user);
+
+            return true;
         }
 
-        public async Task UnassignEmployeeFromPeopleManage(Guid userId)
+        public async Task<bool> UnassignEmployeeFromPeopleManage(string userId)
         {
-            var user = await _userRepository.GetUserWithPeopleManagerById(userId);
+            if (!Guid.TryParse(userId, out var guidId))
+            {
+                throw new ArgumentException("Invalid userId format.");
+            }
+
+            var user = await _userRepository.GetUserWithPeopleManagerById(guidId);
 
             ApiExceptionHandler.ObjectNotFound(user, $"User {user.UserName}");
 
             user.PeopleManagerId = null;
 
             await _userRepository.UpdateUser(user);
+
+            return true;
         }
 
         public async Task<UserDto> UpdateUser(UpdateUserDto updateUserDto)
@@ -129,9 +156,18 @@ namespace MeetingScheduler.Bussines.Services
 
             ApiExceptionHandler.ObjectNotFound(loggedInUser, $"User {loggedInUser.UserName}");
 
-            loggedInUser = _mapper.Map<User>(updateUserDto);
+            loggedInUser.BirthDate = (DateTime)updateUserDto.BirthDate;
 
-            return _mapper.Map<UserDto>(await _userRepository.UpdateUser(loggedInUser));
+            if (loggedInUser.FirstName != updateUserDto.FirstName || loggedInUser.LastName != updateUserDto.LastName)
+            {
+                loggedInUser.FirstName = updateUserDto.FirstName;
+                loggedInUser.LastName = updateUserDto.LastName;
+
+                loggedInUser.UserName = updateUserDto.FirstName + updateUserDto.LastName;
+            }
+
+            await _userRepository.UpdateUser(loggedInUser);
+            return await _userHelperService.MapUserDtoWithRoles(loggedInUser);
         }
 
         public async Task<bool> DeleteUser(Guid userId)

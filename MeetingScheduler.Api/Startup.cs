@@ -54,6 +54,17 @@ namespace MeetingScheduler.Api
             services.AddScoped<IMeetingReminderService, MeetingReminderService>();
             services.AddScoped<IMeetingCompleteService, MeetingCompleteService>();
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowLocalhost",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:3000")
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
+                    });
+            });
+
             services.AddHangfire(configuration =>
                 configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                     .UseSimpleAssemblyNameTypeSerializer()
@@ -154,6 +165,8 @@ namespace MeetingScheduler.Api
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("AllowLocalhost");
 
             app.UseAuthorization();
 
