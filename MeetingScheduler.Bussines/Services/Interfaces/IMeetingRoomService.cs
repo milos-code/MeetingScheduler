@@ -8,6 +8,6 @@ namespace MeetingScheduler.Bussines.Services.Interfaces
         Task<MeetingRoomDto> GetMeetingRoomById(Guid roomId);
         Task<MeetingRoomDto> CreateMeetingRoom(CreateMeetingRoomDto createMeetingRoomDto);
         Task<MeetingRoomDto> UpdateMeetingRoom(UpdateMeetingRoomDto updateMeetingRoomDto);
-        Task<bool> DeleteMeetingRoom(string roomName);
+        Task<bool> DeleteMeetingRoom(string roomId);
     }
 }

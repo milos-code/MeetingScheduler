@@ -1,4 +1,5 @@
-﻿using MeetingScheduler.Bussines.DTOs.User;
+﻿using MeetingScheduler.Bussines.DTOs.Tokens;
+using MeetingScheduler.Bussines.DTOs.User;
 using MeetingScheduler.Bussines.Services.Authentication;
 using MeetingScheduler.Bussines.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -33,6 +34,13 @@ namespace MeetingScheduler.Api.Controllers
         public async Task LogOut()
         {
             await _authenticationService.LogOut();
+        }
+
+        [HttpPost("RefreshToken")]
+        public async Task<ActionResult<LogInUserResponse>> RefreshToken(Tokens tokens)
+        {
+            var result = await _authenticationService.RefreshToken(tokens.AccessToken, tokens.RefreshToken);
+            return Ok(result);
         }
     }
 }

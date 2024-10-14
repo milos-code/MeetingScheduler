@@ -4,12 +4,14 @@ using MeetingScheduler.Bussines.Services.Interfaces;
 using MeetingScheduler.Infrastructure.Models;
 using MeetingScheduler.Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using StudentRecords.Bussines.Exceptions;
 using System.Net;
+using System.Security.Policy;
+using System.Text;
 using System.Transactions;
+using System.Web;
 
 namespace MeetingScheduler.Bussines.Services
 {
@@ -19,7 +21,8 @@ namespace MeetingScheduler.Bussines.Services
         IRoleRepository roleRepository,
         UserManager<User> userManager,
         IUserHelperService userHelperService,
-        IHttpContextAccessor httpContextAccessor) : IUserService
+        IHttpContextAccessor httpContextAccessor,
+        IConfiguration configuration) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IMapper _mapper = mapper;
@@ -27,6 +30,7 @@ namespace MeetingScheduler.Bussines.Services
         private readonly IRoleRepository _roleRepository = roleRepository;
         private readonly UserManager<User> _userManager = userManager;
         private readonly IUserHelperService _userHelperService = userHelperService;
+        private readonly IConfiguration _configuration = configuration;
 
         public async Task<List<UserDto>> GetAllUsers()
         {
@@ -85,6 +89,7 @@ namespace MeetingScheduler.Bussines.Services
                 try
                 {
                     var roleName = await _roleRepository.GetRoleByName(createUserDto.RoleName);
+                    ApiExceptionHandler.ObjectNotFound(roleName, $"Role with the name {roleName}");
 
                     var newUser = await _userRepository.AddUser(user);
 
@@ -92,14 +97,17 @@ namespace MeetingScheduler.Bussines.Services
 
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-                    var emailResult = await _emailService.SendEmail([user.Email], "Email confirmation token", token);
+                    var encodedToken = await _userHelperService.EncodeToken(token);
+
+                    var emailResult = await _emailService.SendEmail(
+                        [user.Email],
+                        "Email confirmation token",
+                        "Please click on the following link: " + _configuration.GetSection("URL") + encodedToken);
 
                     if (emailResult is false)
                     {
                         ApiExceptionHandler.ThrowApiException(HttpStatusCode.BadRequest, "Error sending confirmation token via email.");
                     }
-
-                    //TODO: Implement email token encoding
 
                     scope.Complete();
                 }
@@ -170,17 +178,26 @@ namespace MeetingScheduler.Bussines.Services
             return await _userHelperService.MapUserDtoWithRoles(loggedInUser);
         }
 
-        public async Task<bool> DeleteUser(Guid userId)
+        public async Task<bool> DeleteUser(string userId)
         {
-            var user = await _userRepository.GetUserById(userId);
+            if (!Guid.TryParse(userId, out var guidId))
+            {
+                throw new ArgumentException("Invalid userId format.");
+            }
+
+            var user = await _userRepository.GetUserById(guidId);
 
             ApiExceptionHandler.ObjectNotFound(user, $"User {user.UserName}");
 
-            return await _userRepository.DeleteUser(userId);
+            return await _userRepository.DeleteUser(user.Id);
         }
 
         public async Task<string> SignUpUser(RegisterUserDto signUpUserDto)
         {
+            var encodedToken = HttpUtility.UrlDecode(signUpUserDto.Token);
+
+            string decodedToken = Encoding.Unicode.GetString(Convert.FromBase64String(encodedToken));
+
             var user = await _userRepository.GetUserByEmail(signUpUserDto.Email);
 
             ApiExceptionHandler.ObjectNotFound(user, $"User {signUpUserDto.Email}");
@@ -196,7 +213,7 @@ namespace MeetingScheduler.Bussines.Services
                 TransactionScopeAsyncFlowOption.Enabled);
             try
             {
-                (bool confirmEmailSuccess, string confirmEmailError) = await ConfirmEmail(user, signUpUserDto.Token);
+                (bool confirmEmailSuccess, string confirmEmailError) = await ConfirmEmail(user, decodedToken);
 
                 if (!confirmEmailSuccess && !String.IsNullOrEmpty(confirmEmailError))
                 {
@@ -204,7 +221,7 @@ namespace MeetingScheduler.Bussines.Services
                     await _emailService.SendEmail(
                         [user.Email],
                         "Resent email token as previous one timed out.",
-                        resendToken);
+                        "Please click on the following link" + _configuration.GetSection("URL") + resendToken);
 
                     ApiExceptionHandler.ThrowApiException(HttpStatusCode.BadRequest, "Token has expired. Email resent.");
                 }

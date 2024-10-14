@@ -6,5 +6,6 @@ namespace MeetingScheduler.Bussines.Services.Authentication
     {
         Task<LogInUserResponse> LogInUser(LogInUserDto logInUser);
         Task LogOut();
+        Task<LogInUserResponse> RefreshToken(string token, string refreshToken);
     }
 }

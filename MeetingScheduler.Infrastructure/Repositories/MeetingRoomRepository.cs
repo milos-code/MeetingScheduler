@@ -40,9 +40,9 @@ namespace MeetingScheduler.Infrastructure.Repositories
             return meetingRoom;
         }
 
-        public async Task<bool> DeleteMeetingRoom(string roomName)
+        public async Task<bool> DeleteMeetingRoom(Guid roomId)
         {
-            var meetingRoom = await _context.MeetingRooms.FirstOrDefaultAsync(m => m.RoomName == roomName);
+            var meetingRoom = await _context.MeetingRooms.FirstOrDefaultAsync(m => m.Id == roomId);
             if(meetingRoom == null) { return false; }
 
             _context.MeetingRooms.Remove(meetingRoom);

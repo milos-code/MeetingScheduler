@@ -35,7 +35,22 @@ namespace MeetingScheduler.Bussines.Services
 
         public async Task<List<MeetingDto>> GetAllMeetings()
         {
-            return _mapper.Map<List<MeetingDto>>(await _meetingRepository.GetAllMeetings());
+            var meetings = await _meetingRepository.GetAllMeetings();
+
+            var meetingsDto = new List<MeetingDto>();
+
+            foreach (var meeting in meetings)
+            {
+                var meetingDto = _mapper.Map<MeetingDto>(meeting);
+
+                meetingDto.Users = await _userHelperService.MapUsersDtoListWithRoles(meeting.Users);
+
+                meetingDto.RoomName = meeting.MeetingRoom.RoomName;
+
+                meetingsDto.Add(meetingDto);
+            }
+
+            return meetingsDto;
         }
 
         public async Task<MeetingDto> GetMeetingById(Guid meetingId)
@@ -97,20 +112,25 @@ namespace MeetingScheduler.Bussines.Services
 
                     meeting.Users.Add(peopleManager);
 
-                    var meetingRoom = await _meetingRoomRepository.GetMeetingRoomByName(createMeetingDto.RoomName);
+                    var meetingRoom = await _meetingRoomRepository.GetMeetingRoomById(createMeetingDto.RoomId);
 
-                    if( meetingRoom == null)
+                    if (meetingRoom == null)
                     {
                         ApiExceptionHandler.ThrowApiException(HttpStatusCode.BadRequest, "Meeting room doesn't exist.");
                     }
 
                     meeting.MeetingRoom = meetingRoom;
 
-                    foreach (var userEmail in createMeetingDto.EmployeesEmails)
+                    foreach (var userId in createMeetingDto.EmployeesIds)
                     {
-                        var user = await _userRepository.GetUserByEmail(userEmail);
+                        if (!Guid.TryParse(userId, out var guidId))
+                        {
+                            throw new ArgumentException("Invalid userId format.");
+                        }
 
-                        if(user == null)
+                        var user = await _userRepository.GetUserById(guidId);
+
+                        if (user == null)
                         {
                             ApiExceptionHandler.ThrowApiException(HttpStatusCode.BadRequest, "User doesn't exists.");
                         }
@@ -126,8 +146,13 @@ namespace MeetingScheduler.Bussines.Services
                     meeting.CreationDate = DateTime.UtcNow;
                     meeting = await _meetingRepository.AddMeeting(meeting);
 
+                    var usersEmails = meeting.Users
+                        .Where(u => u.Email != peopleManager.Email)
+                        .Select(e => e.Email)
+                        .ToList();
+
                     await _emailService.SendEmail(
-                        createMeetingDto.EmployeesEmails,
+                        usersEmails,
                         "Meeting notice",
                         $"A meeting has been scheduled for {meeting.MeetingStartTime}. Please respond accordingly.");
 
@@ -159,7 +184,7 @@ namespace MeetingScheduler.Bussines.Services
 
                     meeting.Users.Add(employeeFromToken);
 
-                    var meetingRoom = await _meetingRoomRepository.GetMeetingRoomByName(employeeCreateMeetingDto.RoomName);
+                    var meetingRoom = await _meetingRoomRepository.GetMeetingRoomById(employeeCreateMeetingDto.RoomId);
 
                     if (meetingRoom == null)
                     {
@@ -272,7 +297,7 @@ namespace MeetingScheduler.Bussines.Services
 
             var peopleManager = await _userRepository.GetUserByUserName(httpContextAccessor.HttpContext.User.Identity.Name);
 
-            if(user.PeopleManagerId != peopleManager.Id)
+            if (user.PeopleManagerId != peopleManager.Id)
             {
                 ApiExceptionHandler.ThrowApiException(HttpStatusCode.BadRequest, "Check if this is your employee.");
             }
@@ -294,7 +319,7 @@ namespace MeetingScheduler.Bussines.Services
             return result;
         }
 
-        public async Task<List<EmployeeMeetingsDto>> GetAllMeetingsForEmployeeWithPeopleManager()
+        public async Task<List<MeetingDto>> GetAllMeetingsForEmployeeWithPeopleManager()
         {
             var user = await _userRepository.GetUserByUserName(httpContextAccessor.HttpContext.User.Identity.Name);
 
@@ -304,17 +329,12 @@ namespace MeetingScheduler.Bussines.Services
 
             var meetings = await _meetingRepository.GetAllMeetingsForEmployeeWithPeopleManager(user.Id, peopleManager.Id);
 
-            var result = meetings
-                .Select(m => new EmployeeMeetingsDto
-                {
-                    Username = user.UserName,
-                    MeetingTopic = m.MeetingTopic,
-                    CreationDate = m.CreationDate,
-                    MeetingStartTime = m.MeetingStartTime,
-                    MeetingEndTime = m.MeetingEndTime
-                })
-                .OrderBy(m => m.CreationDate)
-                .ToList();
+            var result = new List<MeetingDto>();
+
+            foreach (var meeting in meetings)
+            {
+                result.Add(await GetMeetingById(meeting.Id));
+            }
 
             return result;
         }

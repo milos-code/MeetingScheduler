@@ -3,8 +3,8 @@
     public class CreateMeetingDto
     {
         public string MeetingTopic { get; set; }
-        public string RoomName { get; set; }
-        public List<string>? EmployeesEmails { get; set; }
+        public Guid RoomId { get; set; }
+        public List<string>? EmployeesIds { get; set; }
         public DateTime MeetingStartTime { get; set; }
         public DateTime MeetingEndTime { get; set; }
     }

@@ -20,7 +20,8 @@ namespace MeetingScheduler.Infrastructure.AppContext
         public DbSet<Meeting> Meetings { get; set; }
         public DbSet<MeetingNotes> MeetingNotes { get; set; }
         public DbSet<UserMeetingStatus> UserMeetingStatuses { get; set; }
-
+        public DbSet<JwtRefreshToken> RefreshTokens { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

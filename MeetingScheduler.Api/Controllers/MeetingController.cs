@@ -13,8 +13,8 @@ namespace MeetingScheduler.Api.Controllers
     {
         private readonly IMeetingService _meetingService = meetingService;
 
-        [HttpGet("GetAllMeeting")]
-        public async Task<ActionResult<List<MeetingDto>>> GetAllMeetingNotes()
+        [HttpGet("GetAllMeetings")]
+        public async Task<ActionResult<List<MeetingDto>>> GetAllMeetings()
         {
             return await _meetingService.GetAllMeetings();
         }
@@ -95,15 +95,15 @@ namespace MeetingScheduler.Api.Controllers
         }
 
         [Authorize(Roles = "PeopleManager")]
-        [HttpPost("GetAllMeetingsForAnEmployee")]
+        [HttpGet("GetAllMeetingsForAnEmployee")]
         public async Task<ActionResult<List<EmployeeMeetingsDto>>> GetAllMeetingsForAnEmployee(string userEmail)
         {
             return Ok(await _meetingService.GetAllMeetingsForAnEmployee(userEmail));
         }
 
         [Authorize(Roles = "Employee")]
-        [HttpPost("GetAllMeetingsForEmployeeWithPeopleManager")]
-        public async Task<ActionResult<List<EmployeeMeetingsDto>>> GetAllMeetingsForEmployeeWithPeopleManager()
+        [HttpGet("GetAllMeetingsForEmployeeWithPeopleManager")]
+        public async Task<ActionResult<List<MeetingDto>>> GetAllMeetingsForEmployeeWithPeopleManager()
         {
             return Ok(await _meetingService.GetAllMeetingsForEmployeeWithPeopleManager());
         }

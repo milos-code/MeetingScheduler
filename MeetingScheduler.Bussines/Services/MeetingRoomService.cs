@@ -42,13 +42,18 @@ namespace MeetingScheduler.Bussines.Services
             return _mapper.Map<MeetingRoomDto>(await _meetingRoomRepository.UpdateMeetingRoom(_mapper.Map<MeetingRoom>(updateMeetingRoomDto)));
         }
 
-        public async Task<bool> DeleteMeetingRoom(string roomName)
+        public async Task<bool> DeleteMeetingRoom(string roomId)
         {
-            var meetingRoom = await _meetingRoomRepository.GetMeetingRoomByName(roomName);
+            if (!Guid.TryParse(roomId, out var guidRoomId))
+            {
+                throw new ArgumentException("Invalid userId format.");
+            }
+
+            var meetingRoom = await _meetingRoomRepository.GetMeetingRoomById(guidRoomId);
 
             ApiExceptionHandler.ObjectNotFound(meetingRoom, $"Meeting Room {meetingRoom.RoomName}");
 
-            return await _meetingRoomRepository.DeleteMeetingRoom(roomName);
+            return await _meetingRoomRepository.DeleteMeetingRoom(guidRoomId);
         }
     }
 }

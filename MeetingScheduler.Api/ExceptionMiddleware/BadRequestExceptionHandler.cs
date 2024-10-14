@@ -9,20 +9,20 @@ namespace MeetingScheduler.Api.ExceptionMiddleware
     {
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            if (exception is not ApiException badHttpRequestException)
+            if (exception is not ApiException apiException)
             {
                 return false;
             }
 
             LogHandlingMiddleware.LogError(
-                badHttpRequestException,
+                apiException,
                 "Exception ocurred: ");
 
             var problemDetials = new ProblemDetails
             {
                 Status = StatusCodes.Status400BadRequest,
                 Title = "Bad request",
-                Detail = badHttpRequestException.Message
+                Detail = apiException.Message
             };
 
             httpContext.Response.StatusCode = problemDetials.Status.Value;

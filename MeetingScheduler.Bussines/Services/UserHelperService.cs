@@ -3,6 +3,7 @@ using MeetingScheduler.Bussines.DTOs.User;
 using MeetingScheduler.Bussines.Services.Interfaces;
 using MeetingScheduler.Infrastructure.Models;
 using MeetingScheduler.Infrastructure.Repositories.Interfaces;
+using System.Text;
 
 namespace MeetingScheduler.Bussines.Services
 {
@@ -31,6 +32,14 @@ namespace MeetingScheduler.Bussines.Services
             }
 
             return usersDto;
+        }
+
+        public async Task<string> EncodeToken(string token)
+        {
+            byte[] encodedBytes = Encoding.Unicode.GetBytes(token);
+            string encodedText = Convert.ToBase64String(encodedBytes);
+
+            return encodedText;
         }
     }
 }

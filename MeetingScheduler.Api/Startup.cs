@@ -18,6 +18,7 @@ using Serilog;
 using Hangfire;
 using MeetingScheduler.Bussines.Services.BackgroundJobs;
 using System.Diagnostics.CodeAnalysis;
+using MeetingScheduler.Bussines.Services.JwtRefreshTokenGenerator;
 
 namespace MeetingScheduler.Api
 {
@@ -36,6 +37,7 @@ namespace MeetingScheduler.Api
             services.AddScoped<IMeetingNotesRepository, MeetingNotesRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IMeetingUserRepository, MeetingUserRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IMeetingService, MeetingService>();
@@ -45,6 +47,7 @@ namespace MeetingScheduler.Api
             services.AddScoped<ITokenGenerator, TokenGenerator>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IUserHelperService, UserHelperService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             services.AddHttpContextAccessor();
 
             services.AddExceptionHandler<BadRequestExceptionHandler>();

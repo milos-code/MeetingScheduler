@@ -7,5 +7,6 @@ namespace MeetingScheduler.Bussines.Services.Interfaces
     {
         Task<UserDto> MapUserDtoWithRoles(User user);
         Task<List<UserDto>> MapUsersDtoListWithRoles(List<User> users);
+        Task<string> EncodeToken(string token);
     }
 }

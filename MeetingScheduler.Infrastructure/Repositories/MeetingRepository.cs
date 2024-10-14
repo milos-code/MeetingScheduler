@@ -12,7 +12,10 @@ namespace MeetingScheduler.Infrastructure.Repositories
 
         public async Task<List<Meeting>> GetAllMeetings()
         {
-            return await _context.Meetings.ToListAsync();
+            return await _context.Meetings
+                .Include(u => u.Users)
+                .Include(m => m.MeetingRoom)
+                .ToListAsync();
         }
 
         public async Task<Meeting> GetMeetingById(Guid meetingId)

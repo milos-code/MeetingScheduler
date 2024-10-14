@@ -26,7 +26,7 @@ namespace MeetingScheduler.Bussines.Services.Authentication
         {
             var user = await _userRepository.GetUserByEmail(logInUserDto.Email);
 
-            ApiExceptionHandler.ObjectNotFound(user, $"User {user.UserName}");
+            ApiExceptionHandler.ObjectNotFound(user, $"User {logInUserDto.Email}");
 
             if (user == null)
             {
@@ -51,6 +51,20 @@ namespace MeetingScheduler.Bussines.Services.Authentication
         public async Task LogOut()
         {
             await _signInManager.SignOutAsync();
+        }
+
+        public async Task<LogInUserResponse> RefreshToken(string token, string refreshToken)
+        {
+            try
+            {
+                var noBearerToken = token.Substring(7);
+                return await _tokenGenerator.RefreshToken(noBearerToken, refreshToken);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
     }
 }

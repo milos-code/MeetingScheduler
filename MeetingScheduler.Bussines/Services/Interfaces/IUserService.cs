@@ -13,7 +13,7 @@ namespace MeetingScheduler.Bussines.Services.Interfaces
         Task<bool> AssignEmployeeToPeopleManager(string userId);
         Task<bool> UnassignEmployeeFromPeopleManage(string userId);
         Task<UserDto> UpdateUser(UpdateUserDto updateUserDto);
-        Task<bool> DeleteUser(Guid userId);
+        Task<bool> DeleteUser(string userId);
         Task<string> SignUpUser(RegisterUserDto signUpUserDto);
     }
 }

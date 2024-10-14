@@ -6,5 +6,6 @@ namespace MeetingScheduler.Bussines.Services.JwtTokenGenerator
     public interface ITokenGenerator
     {
         Task<LogInUserResponse> CreateToken(JwtCreationToken user);
+        Task<LogInUserResponse> RefreshToken(string token, string refreshToken);
     }
 }

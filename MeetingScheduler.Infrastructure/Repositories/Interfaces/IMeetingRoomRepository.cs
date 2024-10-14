@@ -9,6 +9,6 @@ namespace MeetingScheduler.Infrastructure.Repositories.Interfaces
         Task<MeetingRoom> GetMeetingRoomByName(string roomName);
         Task<MeetingRoom> AddMeetingRoom(MeetingRoom meetingRoom);
         Task<MeetingRoom> UpdateMeetingRoom(MeetingRoom meetingRoom);
-        Task<bool> DeleteMeetingRoom(string roomName);
+        Task<bool> DeleteMeetingRoom(Guid roomId);
     }
 }

@@ -2,7 +2,6 @@
 using MeetingScheduler.Bussines.Services.Interfaces;
 using MeetingScheduler.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -81,7 +80,7 @@ namespace MeetingScheduler.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteUser")]
-        public async Task<ActionResult> DeleteUser(Guid userId)
+        public async Task<ActionResult> DeleteUser(string userId)
         {
             await _userService.DeleteUser(userId);
 

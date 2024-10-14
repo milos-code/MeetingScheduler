@@ -16,6 +16,6 @@ namespace MeetingScheduler.Bussines.Services.Interfaces
         Task<MeetingDto> CancelMeeting(Guid meetingId, string reasonForCancelation);
         Task UpdateUserMeetingStatus(Guid userId, Guid meetingId, MeetingStatus status, string? note);
         Task<List<EmployeeMeetingsDto>> GetAllMeetingsForAnEmployee(string userEmail);
-        Task<List<EmployeeMeetingsDto>> GetAllMeetingsForEmployeeWithPeopleManager();
+        Task<List<MeetingDto>> GetAllMeetingsForEmployeeWithPeopleManager();
     }
 }
